@@ -61,10 +61,10 @@ public class DungeonGame : MonoBehaviour
         }
         Debug.Log("A rusty sword rests on a table. A goblin snores in the corner.");
         Debug.Log("The sound of your footsteps awakens the goblin, you grab the rusty sword and fight.");
-        while (health > 0 or orc_health > 0)
+        while (health > 0 || orc_health > 0)
         {
             goblin_health -= ((attack * Random.Range(0,2)) / goblin_armor);
-            health -= ((goblin_attack * Random.Range(0,1.5)) / armor);
+            health -= ((goblin_attack * Random.Range(0,2)) / armor);
             Debug.Log("Clash!");
         }
         if (goblin_health == 0)
@@ -112,14 +112,14 @@ public class DungeonGame : MonoBehaviour
         Debug.Log("Your quick escape has improved your agility. Your agility is now at " + agility + ".");
         Debug.Log("However, a rumble begins to eminate from behind a wall. Footsteps growing closer...");
         Debug.Log("Bursting through the wall, an orc arrives and is ready to attack anything that dare disturb him.");
-        while (health > 0 or orc_health > 0)
+        while (health > 0 || orc_health > 0)
         {
             int attack_turns = 0;
             attack_turns += 1;
             orc_health -= ((attack * Random.Range(0,2)) / orc_armor);
             if (attack_turns % 2 == 0)
             {
-                health -= ((orc_attack * Random.Range(0,1.5)) / armor);
+                health -= ((orc_attack * Random.Range(0,2)) / armor);
             }
             Debug.Log("Clash!");
         }
@@ -146,12 +146,12 @@ public class DungeonGame : MonoBehaviour
         Debug.Log("You have successfully slain the orc. A tough but well fought battle.");
         Debug.Log("You begin to relax after the battle, but you quickly tense back up after hearing a hiss from the pitch black ceiling...");
         Debug.Log("A giant spider drops down from the ceiling, dripping acidic juice that violently reacts to the water.");
-        Debug.Log("You quickly ready yourself for combat once again.")
+        Debug.Log("You quickly ready yourself for combat once again.");
         int spider_health = 80;
         int spider_attack = 40;
         int spider_armor = 10;
-        bool poison_count = 0;
-        while (health > 0 or spider_health > 0)
+        int poison_count = 0;
+        while (health > 0 || spider_health > 0)
         {
             int attack_turns_1 = 0;
             attack_turns_1 += 1;
@@ -163,7 +163,7 @@ public class DungeonGame : MonoBehaviour
             spider_health -= ((attack * Random.Range(0,2)) / spider_armor);
             if (attack_turns_1 % 2 == 0)
             {
-                health -= ((spider_attack * Random.Range(0,1.5)) / armor);
+                health -= ((spider_attack * Random.Range(0,2)) / armor);
                 poison_count = 3;
             }
             Debug.Log("Clash!");
@@ -196,7 +196,7 @@ public class DungeonGame : MonoBehaviour
         Debug.Log("After all that fighting, you decide that taking a rest by a calm, warm fire sounds like a welcome break.");
         Debug.Log("You take a seat by the campfire. Despite the fire looking like it's going to go out soon, you can feel the fire's warmth rejuvinating you.");
         int fire_turns = 5;
-        while (health < 100 or fire_turns > 0)
+        while (health < 100 || fire_turns > 0)
         {
             health += 3;
             fire_turns -= 1;
