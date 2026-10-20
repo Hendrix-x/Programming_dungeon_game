@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using UnityEditor.Build;
 using UnityEngine;
 
 // ==========================================================================
@@ -20,24 +22,39 @@ public class Homework_dungeonGame3 : MonoBehaviour
     "You find what looks like a shop containing some potions and jarred foods, but there doesn't seem to be anyone running the shop. There's just a worm on the table.",
     "All the food has rotted and decayed. The insects and vermin are having a feast. A swarm of ants are gathered around a tapestry.",
     "The tunnel has lead you to a hidden room. A room seemingly made for emergency evacuations, but why would people need to escape a dungeon in such haste?"};
+    string[] exitDescription = { "The stone doorway seems to be the only way out of this room.",
+    "The exit lies past the sleeping goblin. You'll have to tread carefully to escape.",
+    "At the other end of the room is an exit. Stay weary, however. Anything could be hiding in the murky waters.",
+    "The hallway splits off into two paths.",
+    "It's too dark to tell where the exit is. No other option then to press forward, it seems.",
+    "The exit is closeby, but you should probably check out some of the items on sale first. There might be something helpful.",
+    "You can't see an exit, but it looks like there might be something behind the tapestry...",
+    "Is that something on the ceiling? Maybe it's an exit?"};
+    
+    string player_name = "Knight";
+    int health = 100;
+    int attack = 25;
+    int armor = 20;
+    int fire_damage = 20;
+    int agility = 50;
+    float defense = 1.5f; // max defense should be 3
+    int gold = 15;
+    int[] roomGold = { 5, 10 };
+    string[] inventory = { "", "", "", "" };
+    string[] rewards = { "crimson sword", "stamina potion", "iron shield", "health potion", "steel boots" };
+    string[] enemyName = { "Goblin", "Orc", "Spider" };
+    int[] enemyHealth = { 50, 70, 80 };
+    int[] enemyAttack = { 20, 40, 40 };
+    int[] enemyDefense = { 10, 30, 10 };
+    string[] enemyDeaths = { "The goblin falls to the ground, unconscious. You have successfully slain the monster.",
+    "You have successfully slain the orc. A tough but well fought battle.",
+    "The giant spider has been slain. Acid oozes out of its head as it collapses to the floor."};
+    int[] roomEnemy = { -1, 0, 1, -1, -1, -1, -1, -1 };
+    bool inCombat = false;
+    int turns = 0;
     void Start()
     {
-        string player_name = "Knight";
-        int health = 100;
-        int attack = 25;
-        int armor = 20;
-        int fire_damage = 20;
-        int agility = 50;
-        float defense = 1.5f; // max defense should be 3
-        int gold = 15;
-        int[] roomGold = { 5, 10};
-        string[] inventory = { "", "", "", "" };
-        string[] rewards = { "crimson sword", "stamina potion", "iron shield", "health potion", "steel boots" };
-        string[] enemyName = { "Goblin", "Orc", "Spider" };
-        int[] enemyHealth = { 50, 70, 80};
-        int[] enemyAttack = { 20, 40, 40 };
-        int[] enemyDefense = { 10, 30, 10 };
-        int[] roomEnemy = { -1, 0, 1, -1, -1, -1, -1, -1 };
+        
         
         int room_number = 0;
         int rooms_entered = 0;
@@ -49,7 +66,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
         //            goblinHealth (int), goblinAttack (int).
 
         // ===== ALREADY BUILT IN CLASS (Intro lecture): the opening + two rooms =====
-        Debug.Log("=== THE DUNGEON ===");
+        ShowTitle();
         Debug.Log("Welcome, " + player_name + ". Your escape begins."); // replace Hero with the name of your player.
 
         for(int r = 0; r < roomName.Length; r++)
@@ -59,7 +76,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
 
         Debug.Log("");
         Debug.Log("The Entrance Hall");
-        Debug.Log(roomName[room_number]);
+        ShowRoom(room_number);
         rooms_entered += 1;
         if (rooms_entered % 3 == 0)
         {
@@ -69,13 +86,14 @@ public class Homework_dungeonGame3 : MonoBehaviour
         Debug.Log("A torch flickers on the wall. A stone doorway leads north.");
         Debug.Log("Next to the torch is a shelf with a scant few shillings of gold.");
         Debug.Log("Any gold is better than no gold, so you take the " + roomGold[0] + " gold.");
-        gold += roomGold[0];
+        AddGold(roomGold[0]);
         Debug.Log("You now have " + gold + " gold.");
         Debug.Log("You move into the next room.");
+        cursedCoin(2);
         room_number += 1;
         Debug.Log("");
         Debug.Log("The Guard Room");
-        Debug.Log(roomName[room_number]);
+        ShowRoom(room_number);
         rooms_entered += 1;
         if (rooms_entered % 3 == 0)
         {
@@ -86,29 +104,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
         if (roomEnemy[room_number] != -1)
         {
             Debug.Log("The sound of your footsteps awakens the goblin, you grab the rusty sword and fight.");
-            for (int i = 0; i < inventory.Length; i++)
-            {
-                if (inventory[i] == "")
-                {
-                    inventory[i] = "sword";
-                    break;
-                }
-            }
-            while (health > 0 || enemyHealth[0] > 0)
-            {
-                int damageBonus = 0;
-                for (int s = 0; s < inventory.Length; s++)
-                {
-                    if (inventory[s] == "sword")
-                    {
-                        damageBonus += 5;
-                        break;
-                    }
-                }
-                enemyHealth[0] -= (((attack + damageBonus) * Random.Range(0, 2)) / enemyDefense[0]);
-                health -= ((enemyAttack[0] * Random.Range(0, 2)) / armor);
-                Debug.Log("Clash!");
-            }
+            Combat(0);
             if (enemyHealth[0] == 0)
             {
                 Debug.Log("Your battle is victorious, but not without struggle. You have " + health + " hp left.");
@@ -143,7 +139,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
         room_number += 1;
         Debug.Log("The Flooded Passage");
         // no semicolon
-        Debug.Log(roomName[room_number]);
+        ShowRoom(room_number);
         rooms_entered += 1;
         if (rooms_entered % 3 == 0)
         {
@@ -160,26 +156,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
         {
             Debug.Log("However, a rumble begins to eminate from behind a wall. Footsteps growing closer...");
             Debug.Log("Bursting through the wall, an orc arrives and is ready to attack anything that dare disturb him.");
-            while (health > 0 || enemyHealth[1] > 0)
-            {
-                int attack_turns = 0;
-                attack_turns += 1;
-                int damageBonus = 0;
-                for (int s = 0; s < inventory.Length; s++)
-                {
-                    if (inventory[s] == "sword")
-                    {
-                        damageBonus += 5;
-                        break;
-                    }
-                }
-                enemyHealth[1] -= (((attack + damageBonus) * Random.Range(0, 2)) / enemyDefense[1]);
-                if (attack_turns % 2 == 0)
-                {
-                    health -= ((enemyAttack[1] * Random.Range(0, 2)) / armor);
-                }
-                Debug.Log("Clash!");
-            }
+            Combat(1);
             if (enemyHealth[1] == 0)
             {
                 Debug.Log("Your battle is victorious, but not without struggle. You have " + health + " hp left.");
@@ -227,14 +204,8 @@ public class Homework_dungeonGame3 : MonoBehaviour
                     health -= 2;
                     poison_count -= 1;
                 }
-                enemyHealth[2] -= (((attack + damageBonus) * Random.Range(0, 2)) / enemyDefense[2]);
-                if (attack_turns_1 % 2 == 0)
-                {
-                    health -= ((enemyAttack[2] * Random.Range(0, 2)) / armor);
-                    poison_count = 3;
-                }
-                Debug.Log("Clash!");
             }
+            Combat(2);
             if (enemyHealth[2] == 0)
             {
                 Debug.Log("Your battle is victorious, but not without struggle. You have " + health + " hp left.");
@@ -261,7 +232,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
         Debug.Log("You move into the next room.");
         // no problems
         room_number += 1;
-        Debug.Log(roomName[room_number]);
+        ShowRoom(room_number);
         roomsVisited[room_number] = true;
         Debug.Log("The exit leads into a hallway, dimly lit by the warm glow of a campfire.");
         Debug.Log("After all that fighting, you decide that taking a rest by a calm, warm fire sounds like a welcome break.");
@@ -278,7 +249,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
         }
         Debug.Log("You feel better after taking a rest. Your health is now at " + health + ".");
         Debug.Log("In the darkness, you notice a few sparse bits of gold on the ground. About " + roomGold[1] + " gold.");
-        gold += roomGold[1];
+        AddGold(roomGold[1]);
         Debug.Log("You gather all the gold together and keep it. You now have " + gold + " gold left.");
         Debug.Log("The hallway splits into two paths. One path is blocked by a door that requires a key to unlock.");
 
@@ -288,7 +259,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
             {
                 Debug.Log("You use your key to unlock the door and go inside.");
                 room_number += 1;
-                Debug.Log(roomName[room_number]);
+                ShowRoom(room_number);
                 rooms_entered += 1;
                 if (rooms_entered % 3 == 0)
                 {
@@ -324,7 +295,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
                 Debug.Log("You don't have a key for the door, so it seems your only option is to go down the other path.");
                 Debug.Log("The shopping corner");
                 room_number += 2;
-                Debug.Log(roomName[room_number]);
+                ShowRoom(room_number);
                 rooms_entered += 1;
                 if (rooms_entered % 3 == 0)
                 {
@@ -353,7 +324,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
         //          a description line, and a line describing how you exit. 
         room_number += 1;
         Debug.Log("The Dining Hall");
-        Debug.Log(roomName[room_number]);
+        ShowRoom(room_number);
         rooms_entered += 1;
         if (rooms_entered % 3 == 0)
         {
@@ -367,7 +338,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
         //          player out of the dungeon.
         room_number += 1;
         Debug.Log("The Exit Room");
-        Debug.Log(roomName[room_number]);
+        ShowRoom(room_number);
         rooms_entered += 1;
         if (rooms_entered % 3 == 0)
         {
@@ -381,7 +352,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
             if (inventory[i] == "key")
             {
                 Debug.Log("You use your key to unlock the vault. Inside, there is 200 gold and a note. You take the gold and the note, intending to read it later.");
-                gold += 200;
+                AddGold(200);
                 break;
             }
             if (inventory[inventory.Length - 1] == "")
@@ -389,7 +360,17 @@ public class Homework_dungeonGame3 : MonoBehaviour
                 Debug.Log("Unfortunately, you don't have a key that matches the vault, so all you can do is move on.");
             }
         }
-        Debug.Log("You see a ladder leading to a trap door on the ceiling. You open the trap door and find yourself outside the dungeon.");
+        if (IsAlive())
+        {
+            Debug.Log("You see a ladder leading to a trap door on the ceiling. You open the trap door and find yourself outside the dungeon.");
+        }
+        else
+        {
+            Debug.Log("You see a ladder leading to a trap door on the ceiling. You open the trap door and find yourself outside the dungeon.");
+            Debug.Log("However, the outside world looks oddle dark and grim, like how someone would describe the afterlife.");
+            Debug.Log("Oh...");
+        }
+       
 
         Debug.Log("Your final inventory: ");
         for (int i = 0; i < inventory.Length; i++)
@@ -613,5 +594,257 @@ public class Homework_dungeonGame3 : MonoBehaviour
         //      be using this table for anything yet, but add at least three possible rewards.
         //      Example rewards could be some kind of healing item, weapon, armor, etc.
         //      (done)
+
+
+
+        // ===== BEFORE YOU START: move shared variables up to CLASS variables =====
+
+        // A variable declared inside Start() cannot be seen by your other methods.
+        // Any variable that more than one method needs must live at the TOP of the
+        // class (above Start), as a class variable (field). Move these out of Start()
+        // and declare them at class level:
+        //
+        //  Player stats:
+        //   playerName  (string)
+        //   health    (int)
+        //   maxHealth   (int)
+        //   attack    (int)
+        //   defense    (int)
+        //   gold     (int)
+        //
+        //  The map (from the Arrays homework):
+        //   roomNames   (string[])
+        //   roomDescs   (string[])
+        //   roomGold   (int[])
+        //   currentRoom  (int)
+        //
+        //  The enemies (from the Arrays homework):
+        //   enemyNames  (string[])
+        //   enemyHealth  (int[])
+        //   enemyAttack  (int[])
+        //   enemyDefense (int[])
+        //
+        //  The inventory (from the Arrays homework):
+        //   inventory   (string[])
+        //
+        //  Combat state (so a fight can run one round at a time later):
+        //   inCombat   (bool)
+        //   currentEnemy (int)
+        //
+        //  Tunable constants:
+        //   lowHealth   (const int) - the "badly wounded" cutoff
+        //   potionPrice  (const int)
+        //   healAmount  (const int) - the default amount a potion heals
+        //
+        // (If you followed the Arrays homework, the arrays are already class variables.
+        // You mainly need to lift the player stats, combat state, and constants up here.)
+
+
+        // ================= PART A: METHODS I (build in this order) =================
+
+
+        // A1: Write a method, ShowTitle(), that prints the game's title banner (it
+        //   takes nothing and returns nothing). Call it at the start of the game.
+        //   (done)
+
+        // A2: Write a method, ShowRoom(int index), that prints that room's name and
+        //   description from your arrays. Use it everywhere you print a room by hand,
+        //   and each time the player moves to a new room.
+        //   (done)
+
+        // A3: Split the fight into ONE round plus a loop that repeats it. (This makes it
+        //   painless to add player input later, when each round will run on a key
+        //   press instead of inside a loop.)        //
+        //   First write CombatRound(int enemyIndex): a SINGLE exchange using the
+        //   enemy's stats from your arrays. The player attacks the enemy (enemy health
+        //   drops by the player's attack); then, ONLY IF the enemy is still alive, it
+        //   attacks back (player health drops by the enemy's attack). Report the
+        //   round. If either side has run out of health, print the outcome and set
+        //   inCombat to false.
+        //
+        //   Then write Combat(int enemyIndex) as a thin wrapper that runs the whole
+        //   fight for now: set currentEnemy, set inCombat to true, then keep calling
+        //   CombatRound(enemyIndex) while inCombat is true. Call Combat in each
+        //   enemy's room - Combat(0) in the Goblin's Den, Combat(1) in the Ogre's
+        //   Lair, Combat(2) in the Spider's Vault. Your three copied fight blocks
+        //   become three one-line calls, and each enemy stays in its own room.
+        //
+        //   (Later, when we add input, we delete this loop and call CombatRound once
+        //   each time the player chooses to attack - the round method stays the same.)
+        //   (done)
+
+        // A4: Write a method, IsAlive(), that returns whether the hero is still alive
+        //   (health above 0). Use the value it returns to decide the ending.
+        //   (done)
+
+
+
+        // A5: Write a method, AddGold(int amount), that adds the amount to the player's
+        //   gold and hands back the new total. Print the value it returns.
+        //   (done)
+
+
+
+        // A6: Write a method, RollDice(), that returns a random number from 1 to 20. Use
+        //   what it returns in your combat or a skill check instead of calling
+        //   Random.Range in line.
+        //   (done)
+
+
+        // A7: Write a method, ReportCondition(int health), that prints the hero's
+        //   condition: fallen if no health remains, badly wounded if it is low,
+        //   otherwise steady. Call it right after the hero takes damage, anywhere in
+        //   the dungeon.
+        //   (done)
+
+
+        // ================= PART B: METHODS II =================
+
+
+
+        // B1: Overload RollDice from A6 (same name, different inputs). Add
+        //   RollDice(int sides) that returns a number from 1 to the sides you pass in,
+        //   and RollDice(int min, int max) that returns a number from min to max. Now
+        //   one name rolls a d20, any-sided die, or any range you need.
+        //   (done)
+
+        // B2: Give healing an optional amount, so Heal() restores a sensible default and
+        //   Heal(25) restores that much - all from one method. Keep the default in a
+        //   named value.
+        //   (done)
+
+        // B3: Make two ways to describe a room under one name (overloading): one that
+        //   prints just the short description, and one that takes an extra value for
+        //   "look closely" that also lists the room's exits and any item in it. Now
+        //   the player can glance or examine in detail.
+        //   (done)
+
+
+        // B4: Write a method that passes time in the dungeon for a number of turns,
+        //   defaulting to 1 turn when no number is given (think "wait" versus
+        //   "wait 3"). Report each turn that passes.
+        //   (done?)
+
+        // B5: Write a method that takes a number - say a "cursed coins" amount -
+        //   subtracts from it INSIDE the method, and prints it there. Back in Start,
+        //   print the original variable afterward and notice it did NOT change: a
+        //   parameter is the method's own copy. Then make the change actually stick by
+        //   returning the new value (or using a field).
+        //   (done?)
+    }
+    void ShowTitle()
+    {
+        Debug.Log("========= THE DUNGEON =========");
+    }
+    void ShowRoom(int index)
+    {
+        Debug.Log(roomName[index]);
+        Debug.Log(roomDescription[index]);
+    }
+    void ShowRoom(int index, bool lookClosely)
+    {
+        Debug.Log(roomName[index]);
+        if (lookClosely == true)
+        {
+            Debug.Log(exitDescription[index]);
+        }
+        else
+        {
+            Debug.Log(roomDescription[index]);
+        }
+    }
+    void CombatRound(int EnemyIndex)
+    {
+        //inCombat = true;
+        int damageBonus = 0;
+        for (int s = 0; s < inventory.Length; s++)
+        {
+            if (inventory[s] == "sword")
+            {
+                damageBonus += 5;
+                break;
+            }
+        }
+        enemyHealth[EnemyIndex] -= (((attack + damageBonus) * RollDice(2)) / enemyDefense[EnemyIndex]);
+        if (enemyHealth[EnemyIndex] > 0)
+        {
+            health -= ((enemyAttack[EnemyIndex] * RollDice(2)) / armor);
+            ReportCondition();
+        }
+        Debug.Log("Clash!");
+        if (health <= 0)
+        {
+            //Debug.Log("Your journey has come to an unfortunate end...");
+            inCombat = false;
+        }
+        if (enemyHealth[EnemyIndex] <= 0)
+        {
+            Debug.Log(enemyDeaths[EnemyIndex]);
+            inCombat = false;
+        }
+    }
+    void Combat(int EnemyIndex)
+    {
+        inCombat = true;
+        while (inCombat == true)
+        {
+            CombatRound(EnemyIndex);
+        }
+    }
+    bool IsAlive()
+    {
+        return health > 0;
+    }
+    void AddGold(int amount)
+    {
+        gold += amount;
+    }
+    int RollDice()
+    {
+        return Random.Range(0, 20);
+    }
+    int RollDice(int sides)
+    {
+        return Random.Range(0, sides);
+    }
+    int RollDice(int min, int max)
+    {
+        return Random.Range(min, max);
+    }
+    void ReportCondition()
+    {
+        if (health >= 70)
+        {
+            Debug.Log("Your condition is still strong enough to continue going");
+        }
+        else if (health >= 50)
+        {
+            Debug.Log("Your health could be better, but still with the strength to go on.");
+        }
+        else if (health >= 20)
+        {
+            Debug.Log("You are in a quite rough state. It's compelling to stop right here, but not now.");
+        }
+        if (health <= 0)
+        {
+            Debug.Log("Your journey has come to an unfortunate end...");
+        }
+    }
+    void Heal()
+    {
+        health += 10;
+    }
+    void Heal(int healing)
+    {
+        health += healing;
+    }
+    void wait(int wait_time = 1)
+    {
+        turns += wait_time;
+    }
+    void cursedCoin(int input)
+    {
+        gold -= input;
+        Debug.Log(gold);
     }
 }
