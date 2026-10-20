@@ -186,25 +186,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
             Debug.Log("You quickly ready yourself for combat once again.");
 
             int poison_count = 0;
-            while (health > 0 || enemyHealth[2] > 0)
-            {
-                int damageBonus = 0;
-                for (int s = 0; s < inventory.Length; s++)
-                {
-                    if (inventory[s] == "sword")
-                    {
-                        damageBonus += 5;
-                        break;
-                    }
-                }
-                int attack_turns_1 = 0;
-                attack_turns_1 += 1;
-                if (poison_count > 0)
-                {
-                    health -= 2;
-                    poison_count -= 1;
-                }
-            }
+            
             Combat(2);
             if (enemyHealth[2] == 0)
             {
@@ -289,6 +271,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
                 }
                 Debug.Log("You escape the room, but not without wondering what was in that room. A trap? A monster? Are you equipped to take it on?");
                 Debug.Log("You decide to keep that room in mind. Hopefully you can come back to it when you are more prepared.");
+                break;
             }
             if (inventory[inventory.Length - 1] == "")
             {
@@ -313,11 +296,11 @@ public class Homework_dungeonGame3 : MonoBehaviour
                         {
                             inventory[ii] = "potion";
                             Debug.Log("You buy a potion. It may be helpful in the future.");
-                            break;
                         }
                     }
                 }
                 Debug.Log("You progress on to the next room.");
+                break;
             }
         }
         // TODO A2: write at least one of your OWN room - a Room Name line,
@@ -738,6 +721,7 @@ public class Homework_dungeonGame3 : MonoBehaviour
     }
     void ShowRoom(int index)
     {
+        //Debug.Log("Room count: " + index);
         Debug.Log(roomName[index]);
         Debug.Log(roomDescription[index]);
     }
