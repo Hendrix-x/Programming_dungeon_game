@@ -51,12 +51,14 @@ public class Inventory
         for(int n = 0; n < storage.Length; n++)
         {
             //return null;
-            if (storage[n].Name == name)
+            if (storage[n] != null)
             {
-                locate = storage[n];
-                break;
+                if (storage[n].Name == name)
+                {
+                    locate = storage[n];
+                    break;
+                }
             }
-            
         }
         return locate;
     }

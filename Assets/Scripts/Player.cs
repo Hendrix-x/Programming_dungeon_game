@@ -46,7 +46,7 @@ public class Player
     // no separate "has the key" flag any more. Give the player one Inventory and
     // create it here so the player starts with an empty pack.
     // TODO: declare an Inventory member variable and set it to a new Inventory.
-    public Inventory backpack;
+    public Inventory backpack = new Inventory();
 
 
     /// <summary>
@@ -145,7 +145,6 @@ public class Player
     /// <returns>True if the inventory holds a matching item.</returns>
     public bool HasItem(string itemName)
     {
-        Debug.Log(backpack);
         return backpack.FindByName(itemName) != null;
     }
 

@@ -424,9 +424,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 830769374}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 795655b1225c5b84dbd9fab810d6d436, type: 3}
+  m_Script: {fileID: 11500000, guid: 33dd1c17a33ca35458db39ee35d8fd7c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Homework_dungeonGame3
+  m_EditorClassIdentifier: Assembly-CSharp::Homework_DungeonGame5
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
